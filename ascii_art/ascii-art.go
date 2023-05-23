@@ -50,17 +50,11 @@ func Process(input, banner string) error {
 
 	switch banner {
 	case "standard":
-		lineCount = 9
-		offset = 289
-
+		PrintArt2(arr, lines)
 	case "shadow":
-		lineCount = 9
-		offset = 289
-
+		PrintArt2(arr, lines)
 	case "thinkertoy":
-		lineCount = 9
-		offset = 289
-
+		PrintArt2(arr, lines)
 	case "colossal":
 		lineCount = 9
 		offset = 289
@@ -87,6 +81,20 @@ func PrintArt(arr []rune, lines []string, lineCount int, offset int) {
 		for line := 1; line <= lineCount; line++ {
 			for _, r := range arr {
 				skip := (r * rune(lineCount)) - rune(offset)
+				fmt.Print(lines[line+int(skip)])
+			}
+			fmt.Println()
+		}
+	} else {
+		fmt.Println()
+	}
+}
+
+func PrintArt2(arr []rune, lines []string) {
+	if len(arr) != 0 {
+		for line := 1; line <= 8; line++ {
+			for _, r := range arr {
+				skip := (r - 32) * 9
 				fmt.Print(lines[line+int(skip)])
 			}
 			fmt.Println()

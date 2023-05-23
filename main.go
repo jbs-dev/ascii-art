@@ -24,12 +24,10 @@ var validBanners = []string{
 }
 
 func main() {
-	for _, arg := range os.Args {
-		if strings.HasPrefix(arg, "--") && !strings.Contains(arg, "=") || strings.HasPrefix(arg, "-") && !strings.Contains(arg, "=") {
-			fmt.Println("Usage: go run . [OPTION]")
-			fmt.Println("EX: go run . --flag=<option> <string>")
-			os.Exit(0)
-		}
+	if len(os.Args) != 3 || !isValidBanner(os.Args[2]) {
+		fmt.Println("Usage: go run . [STRING] [BANNER]")
+		fmt.Println("EX: go run . something standard")
+		os.Exit(0)
 	}
 
 	reverseFlag := flag.String("reverse", "", "Path to the target file to process")

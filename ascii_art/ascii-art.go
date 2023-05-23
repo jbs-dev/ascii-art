@@ -58,8 +58,11 @@ func Process(input, banner string) error {
 	case "colossal":
 		lineCount = 9
 		offset = 289
+	case "cards":
+		lineCount = 9
+		offset = 289
 
-	case "isometric":
+	case "metric":
 		lineCount = 11
 		offset = 353
 
@@ -70,6 +73,9 @@ func Process(input, banner string) error {
 	case "matrix":
 		lineCount = 10
 		offset = 320
+	case "rev":
+		lineCount = 11
+		offset = 353
 	}
 
 	PrintArt(arr, lines, lineCount, offset)

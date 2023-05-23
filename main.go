@@ -19,12 +19,45 @@ var validBanners = []string{
 	"colossal",
 	"graffiti",
 	"cards",
-	"isometric",
+	"metric",
 	"matrix",
+	"rev",
 }
 
 func main() {
-	if len(os.Args) != 3 || !isValidBanner(os.Args[2]) {
+	hasFlagOption := false
+
+	for _, arg := range os.Args {
+		switch {
+		case strings.HasPrefix(arg, "--") || strings.HasPrefix(arg, "-"):
+			hasFlagOption = true
+
+			switch {
+			case strings.HasPrefix(arg, "--reverse") && !strings.Contains(arg, "="):
+				fmt.Println("Usage: go run . [OPTION]")
+				fmt.Println("EX: go run . --reverse=<fileName>")
+				os.Exit(0)
+			case strings.HasPrefix(arg, "--color") && !strings.Contains(arg, "="):
+				fmt.Println("Usage: go run . [OPTION] [STRING]")
+				fmt.Println("EX: go run . --color=<color> <letters to be colored> \"something\"")
+				os.Exit(0)
+			case strings.HasPrefix(arg, "--output") && !strings.Contains(arg, "="):
+				fmt.Println("Usage: go run . [OPTION] [STRING] [BANNER]")
+				fmt.Println("EX: go run . --output=<fileName.txt> something standard")
+				os.Exit(0)
+			case strings.HasPrefix(arg, "--fs") && !strings.Contains(arg, "="):
+				fmt.Println("Usage: go run . [STRING] [BANNER]")
+				fmt.Println("EX: go run . something standard")
+				os.Exit(0)
+			case strings.HasPrefix(arg, "--justify") && !strings.Contains(arg, "="):
+				fmt.Println("Usage: go run . [OPTION] [STRING] [BANNER]")
+				fmt.Println("Example: go run . --align=right something standard")
+				os.Exit(0)
+			}
+		}
+	}
+
+	if !hasFlagOption && (len(os.Args) != 3 || !isValidBanner(os.Args[2])) {
 		fmt.Println("Usage: go run . [STRING] [BANNER]")
 		fmt.Println("EX: go run . something standard")
 		os.Exit(0)

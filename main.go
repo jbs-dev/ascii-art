@@ -18,7 +18,7 @@ var validBanners = []string{
 	"thinkertoy",
 	"colossal",
 	"graffiti",
-	"cards",
+	"card",
 	"metric",
 	"matrix",
 	"rev",

@@ -10,15 +10,15 @@ func TestProcessAscii(t *testing.T) {
 		input  string
 		banner string
 	}{
-		{input: "Hello, World!", banner: "standard"},
-		{input: "Test1ng-123", banner: "shadow"},
-		{input: "ASCII", banner: "thinkertoy"},
-		{input: "Hello", banner: "standard"},
+		{input: "ABC", banner: "card"},
 		{input: "Testing", banner: "colossal"},
-		{input: "ASCII Art", banner: "metric"},
-		{input: "Hello, World!", banner: "matrix"},
 		{input: "Testing-123", banner: "graffiti"},
+		{input: "Hello, World!", banner: "matrix"},
+		{input: "ASCII Art", banner: "metric"},
 		{input: "ABC", banner: "rev"},
+		{input: "Test1ng-123", banner: "shadow"},
+		{input: "Hello, World!", banner: "standard"},
+		{input: "ASCII", banner: "thinkertoy"},
 	}
 
 	for _, tc := range testCases {

@@ -98,17 +98,3 @@ func printArt(arr []rune, lines []string, lineCount int, offset int) {
 		fmt.Println()
 	}
 }
-
-func PrintArt2(arr []rune, lines []string) {
-	if len(arr) != 0 {
-		for line := 1; line <= 8; line++ {
-			for _, r := range arr {
-				skip := (r - 32) * 9
-				fmt.Print(lines[line+int(skip)])
-			}
-			fmt.Println()
-		}
-	} else {
-		fmt.Println()
-	}
-}

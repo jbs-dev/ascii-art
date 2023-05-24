@@ -31,10 +31,43 @@ func Process(input, banner string) error {
 	var lineCount int
 	var offset int
 
+	switch banner {
+	case "standard":
+		lineCount = 9
+		offset = 289
+	case "shadow":
+		lineCount = 9
+		offset = 289
+	case "thinkertoy":
+		lineCount = 9
+		offset = 289
+	case "card":
+		lineCount = 9
+		offset = 289
+	case "colossal":
+		lineCount = 9
+		offset = 289
+
+	case "metric":
+		lineCount = 11
+		offset = 353
+
+	case "graffiti":
+		lineCount = 7
+		offset = 222
+
+	case "matrix":
+		lineCount = 10
+		offset = 320
+	case "rev":
+		lineCount = 11
+		offset = 353
+	}
+
 	for i, r := range input {
 		if Newline {
 			Newline = false
-			PrintArt(arr, lines, lineCount, offset) // Provide lineCount and offset here
+			printArt(arr, lines, lineCount, offset) // Provide lineCount and offset here
 			arr = []rune{}
 			continue
 		}
@@ -48,41 +81,11 @@ func Process(input, banner string) error {
 		arr = append(arr, r)
 	}
 
-	switch banner {
-	case "standard":
-		PrintArt2(arr, lines)
-	case "shadow":
-		PrintArt2(arr, lines)
-	case "thinkertoy":
-		PrintArt2(arr, lines)
-	case "colossal":
-		lineCount = 9
-		offset = 289
-	case "cards":
-		lineCount = 9
-		offset = 289
-
-	case "metric":
-		lineCount = 11
-		offset = 353
-
-	case "graffiti":
-		lineCount = 6
-		offset = 190
-
-	case "matrix":
-		lineCount = 10
-		offset = 320
-	case "rev":
-		lineCount = 11
-		offset = 353
-	}
-
-	PrintArt(arr, lines, lineCount, offset)
+	printArt(arr, lines, lineCount, offset)
 	return nil
 }
 
-func PrintArt(arr []rune, lines []string, lineCount int, offset int) {
+func printArt(arr []rune, lines []string, lineCount int, offset int) {
 	if len(arr) != 0 {
 		for line := 1; line <= lineCount; line++ {
 			for _, r := range arr {

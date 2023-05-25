@@ -22,6 +22,7 @@ var validBanners = []string{
 	"metric",
 	"matrix",
 	"rev",
+	"card",
 }
 
 func main() {

@@ -31,57 +31,65 @@ func Process(input, banner string) error {
 	var lineCount int
 	var offset int
 
-	switch banner {
-	case "standard":
-		lineCount = 9
-		offset = 289
-	case "shadow":
-		lineCount = 9
-		offset = 289
-	case "thinkertoy":
-		lineCount = 9
-		offset = 289
-	case "card":
-		lineCount = 9
-		offset = 289
-	case "colossal":
-		lineCount = 9
-		offset = 289
-
-	case "metric":
-		lineCount = 11
-		offset = 353
-
-	case "graffiti":
-		lineCount = 7
-		offset = 222
-
-	case "matrix":
-		lineCount = 10
-		offset = 320
-	case "rev":
-		lineCount = 11
-		offset = 353
-	}
-
-	for i, r := range input {
-		if Newline {
-			Newline = false
-			printArt(arr, lines, lineCount, offset) // Provide lineCount and offset here
-			arr = []rune{}
-			continue
-		}
-
-		if r == '\\' && i != len(input)-1 {
-			if input[i+1] == 'n' {
-				Newline = true
+	if banner == "standard" || banner == "shadow" || banner == "thinkertoy" {
+		for i, r := range input {
+			if Newline {
+				Newline = false
+				art(arr, lines)
+				arr = []rune{}
 				continue
 			}
+			if r == '\\' && len(input) != i+1 {
+				if input[i+1] == 'n' {
+					Newline = true
+					continue
+				}
+			}
+			arr = append(arr, r)
 		}
-		arr = append(arr, r)
-	}
+		art(arr, lines)
 
-	printArt(arr, lines, lineCount, offset)
+	} else {
+		switch banner {
+		case "card":
+			lineCount = 7
+			offset = 223
+
+		case "colossal":
+			lineCount = 9
+			offset = 289
+		case "metric":
+			lineCount = 11
+			offset = 705
+		case "graffiti":
+			lineCount = 7
+			offset = 222
+		case "matrix":
+			lineCount = 10
+			offset = 320
+		case "rev":
+			lineCount = 11
+			offset = 353
+		}
+
+		for i, r := range input {
+			if Newline {
+				Newline = false
+				printArt(arr, lines, lineCount, offset)
+				arr = []rune{}
+				continue
+			}
+
+			if r == '\\' && i != len(input)-1 {
+				if input[i+1] == 'n' {
+					Newline = true
+					continue
+				}
+			}
+			arr = append(arr, r)
+		}
+		printArt(arr, lines, lineCount, offset)
+	}
 	return nil
 }
 
@@ -90,6 +98,20 @@ func printArt(arr []rune, lines []string, lineCount int, offset int) {
 		for line := 1; line <= lineCount; line++ {
 			for _, r := range arr {
 				skip := (r * rune(lineCount)) - rune(offset)
+				fmt.Print(lines[line+int(skip)])
+			}
+			fmt.Println()
+		}
+	} else {
+		fmt.Println()
+	}
+}
+
+func art(arr []rune, lines []string) {
+	if len(arr) != 0 {
+		for line := 1; line <= 8; line++ {
+			for _, r := range arr {
+				skip := (r - 32) * 9
 				fmt.Print(lines[line+int(skip)])
 			}
 			fmt.Println()

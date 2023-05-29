@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"student/utils"
 )
 
 func Process(input, banner string) error {
@@ -28,14 +29,12 @@ func Process(input, banner string) error {
 
 	var arr []rune
 	Newline := false
-	var lineCount int
-	var offset int
 
-	if banner == "standard" || banner == "shadow" || banner == "thinkertoy" {
+	if banner == "standard" || banner == "shadow" || banner == "thinkertoy" || banner == "colossal" {
 		for i, r := range input {
 			if Newline {
 				Newline = false
-				art(arr, lines)
+				artTerminal(arr, lines)
 				arr = []rune{}
 				continue
 			}
@@ -47,35 +46,24 @@ func Process(input, banner string) error {
 			}
 			arr = append(arr, r)
 		}
-		art(arr, lines)
+		artTerminal(arr, lines)
 
 	} else {
-		switch banner {
-		case "card":
-			lineCount = 7
-			offset = 223
+		var lineCount int
+		var offset int
 
-		case "colossal":
-			lineCount = 9
-			offset = 289
-		case "metric":
-			lineCount = 11
-			offset = 705
-		case "graffiti":
-			lineCount = 7
-			offset = 222
-		case "matrix":
-			lineCount = 10
-			offset = 320
-		case "rev":
-			lineCount = 11
-			offset = 353
+		bannerDetails, err := utils.GetBannerDetails(banner)
+		if err != nil {
+			return fmt.Errorf("unknown banner: %v", err)
 		}
+
+		lineCount = bannerDetails.LineCount
+		offset = bannerDetails.Offset
 
 		for i, r := range input {
 			if Newline {
 				Newline = false
-				printArt(arr, lines, lineCount, offset)
+				printTerminal(arr, lines, lineCount, offset)
 				arr = []rune{}
 				continue
 			}
@@ -88,35 +76,35 @@ func Process(input, banner string) error {
 			}
 			arr = append(arr, r)
 		}
-		printArt(arr, lines, lineCount, offset)
+		printTerminal(arr, lines, lineCount, offset)
 	}
 	return nil
 }
 
-func printArt(arr []rune, lines []string, lineCount int, offset int) {
+func printTerminal(arr []rune, lines []string, lineCount int, offset int) {
 	if len(arr) != 0 {
 		for line := 1; line <= lineCount; line++ {
 			for _, r := range arr {
 				skip := (r * rune(lineCount)) - rune(offset)
-				fmt.Print(lines[line+int(skip)])
+				fmt.Fprint(os.Stdout, lines[line+int(skip)])
 			}
-			fmt.Println()
+			fmt.Fprintln(os.Stdout)
 		}
 	} else {
-		fmt.Println()
+		fmt.Fprintln(os.Stdout)
 	}
 }
 
-func art(arr []rune, lines []string) {
+func artTerminal(arr []rune, lines []string) {
 	if len(arr) != 0 {
 		for line := 1; line <= 8; line++ {
 			for _, r := range arr {
 				skip := (r - 32) * 9
-				fmt.Print(lines[line+int(skip)])
+				fmt.Fprint(os.Stdout, lines[line+int(skip)])
 			}
-			fmt.Println()
+			fmt.Fprintln(os.Stdout)
 		}
 	} else {
-		fmt.Println()
+		fmt.Fprintln(os.Stdout)
 	}
 }

@@ -22,25 +22,13 @@ func main() {
 			hasFlagOption = true
 
 			switch {
-			case strings.HasPrefix(arg, "--reverse") && !strings.Contains(arg, "="):
+			case strings.HasPrefix(arg, "--reverse") && !strings.Contains(arg, "="),
+				strings.HasPrefix(arg, "--color") && !strings.Contains(arg, "="),
+				strings.HasPrefix(arg, "--output") && !strings.Contains(arg, "="),
+				strings.HasPrefix(arg, "--fs") && !strings.Contains(arg, "="),
+				strings.HasPrefix(arg, "--justify") && !strings.Contains(arg, "="):
 				fmt.Println("Usage: go run . [OPTION]")
 				fmt.Println("EX: go run . --reverse=<fileName>")
-				os.Exit(0)
-			case strings.HasPrefix(arg, "--color") && !strings.Contains(arg, "="):
-				fmt.Println("Usage: go run . [OPTION] [STRING]")
-				fmt.Println("EX: go run . --color=<color> <letters to be colored> \"something\"")
-				os.Exit(0)
-			case strings.HasPrefix(arg, "--output") && !strings.Contains(arg, "="):
-				fmt.Println("Usage: go run . [OPTION] [STRING] [BANNER]")
-				fmt.Println("EX: go run . --output=<fileName.txt> something standard")
-				os.Exit(0)
-			case strings.HasPrefix(arg, "--fs") && !strings.Contains(arg, "="):
-				fmt.Println("Usage: go run . [STRING] [BANNER]")
-				fmt.Println("EX: go run . something standard")
-				os.Exit(0)
-			case strings.HasPrefix(arg, "--justify") && !strings.Contains(arg, "="):
-				fmt.Println("Usage: go run . [OPTION] [STRING] [BANNER]")
-				fmt.Println("Example: go run . --align=right something standard")
 				os.Exit(0)
 			}
 		}
@@ -101,16 +89,16 @@ func main() {
 		}
 	case *alignFlag != "":
 		args := flag.Args()
-		if len(args) != 2 {
-			fmt.Println("Invalid command line arguments. Usage: go run main.go --align=<alignment> <string> <banner>")
+		if len(args) < 1 {
+			fmt.Println("Invalid command line arguments. Usage: go run main.go --align=<alignment> <string> [banner]")
 			os.Exit(1)
 		}
 		inputString := args[0]
-		banner := args[1]
-		if !ban.IsValidBanner(banner) {
-			fmt.Println("Invalid banner type.")
-			os.Exit(1)
+		banner := "standard" // default banner
+		if len(args) > 1 && ban.IsValidBanner(args[1]) {
+			banner = args[1]
 		}
+
 		asciiArt, err := align.Process(inputString, *alignFlag, banner)
 		if err != nil {
 			fmt.Println(err)

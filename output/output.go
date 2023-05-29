@@ -1,126 +1,111 @@
 package output
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
+	"student/ascii_art"
 )
 
 var SelectedFont string
+var validBanners = []string{
+	"standard",
+	"shadow",
+	"thinkertoy",
+	"colossal",
+	"graffiti",
+	"metric",
+	"matrix",
+	"rev",
+	"card",
+}
 
-func Process(args []string, outputFileName string) {
+// Process function to generate and output ASCII art
+func Process(outputFileName string, args []string, banner string) {
 	if len(args) < 1 {
 		return
 	}
 
-	// Select the font based on provided arguments
-	for _, arg := range args {
-		switch arg {
-		case "standard":
-			SelectedFont = "fonts/standard.txt"
-		case "shadow":
-			SelectedFont = "fonts/shadow.txt"
-		case "thinkertoy":
-			SelectedFont = "fonts/thinkertoy.txt"
-		}
-	}
-
-	bannerStr := args[0]
-	for _, arg := range args[1:] {
-		if arg != "standard" && arg != "thinkertoy" && arg != "shadow" {
-			bannerStr += " " + arg
-		}
-	}
-
-	var multilineBanner bool
-
-	var bannerStrArr []string
-	for _, char := range bannerStr {
-		bannerStrArr = append(bannerStrArr, string(char))
-	}
-
-	end := len(bannerStrArr) - 1
-
-	for i := range bannerStrArr {
-		if i != 0 {
-			if i == end && bannerStrArr[i] == "!" && bannerStrArr[i-1] == "\\" {
-				bannerStrArr = remove(bannerStrArr, i-1)
-				i = i - 1
-			}
-			if bannerStrArr[i] == "n" && bannerStrArr[i-1] == "\\" {
-				multilineBanner = true
-			}
-		}
-	}
-	bannerStr = strings.Join(bannerStrArr, "")
-
-	// Specify directory where you want to store files
-	outputDirectory := "tests"
-
-	// Create the directory if it doesn't exist
-	err := os.MkdirAll(outputDirectory, 0755) // 0755 sets read/write permissions for owner and read for others
-	if err != nil {
-		fmt.Println("Error creating directory:", err)
+	if !isValidBanner(banner) {
+		fmt.Println("Invalid banner name:", banner)
 		os.Exit(1)
 	}
 
-	// Join directory and file name to create full path
-	fullPath := filepath.Join(outputDirectory, outputFileName)
+	bannerStr := strings.Join(args, " ")
 
-	// Create output file in the specified directory
-	file, err := os.Create(fullPath)
+	// Check if outputFileName is provided
+	if outputFileName != "" {
+		// Write the ASCII art to the output file
+		outputDirectory := "tests"
+		err := os.MkdirAll(outputDirectory, 0755) // 0755 sets read/write permissions for owner and read for others
+		if err != nil {
+			fmt.Println("Error creating directory:", err)
+			os.Exit(1)
+		}
 
-	if err != nil {
-		fmt.Println("Usage: go run . [OPTION] [STRING] [BANNER]")
-		fmt.Println("Example: go run . --output=<fileName.txt> something standard")
-		os.Exit(0)
-	}
-	defer file.Close()
+		fullPath := filepath.Join(outputDirectory, outputFileName)
 
-	banner := ""
-	if multilineBanner {
-		lines := strings.Split(bannerStr, "\\n")
-		for _, line := range lines {
-			for i := 0; i < 8; i++ {
-				for _, char := range line {
-					banner += GetLine(SelectedFont, 1+int(char-' ')*9+i)
-				}
-				fmt.Fprintln(file, banner)
-				banner = ""
+		// Generate ASCII art and write to a file
+		asciiArt, err := ascii_art.GenerateAsciiArt(bannerStr, banner)
+		if err != nil {
+			fmt.Println("Error generating ASCII art:", err)
+			os.Exit(1)
+		}
+
+		// Write the ASCII art to the file.
+		err = os.WriteFile(fullPath, []byte(asciiArt), 0644)
+		if err != nil {
+			fmt.Println("Error writing to file:", err)
+			os.Exit(1)
+		}
+
+		// Open the file.
+		file, err := os.OpenFile(fullPath, os.O_RDWR, 0666)
+		if err != nil {
+			fmt.Println("Error opening file:", err)
+			os.Exit(1)
+		}
+		defer file.Close()
+
+		// Get the file size.
+		stat, err := file.Stat()
+		if err != nil {
+			fmt.Println("Error getting file stats:", err)
+			os.Exit(1)
+		}
+
+		// Check the last byte for a newline.
+		lastByte := make([]byte, 1)
+		_, err = file.ReadAt(lastByte, stat.Size()-1)
+		if err != nil {
+			fmt.Println("Error reading from file:", err)
+			os.Exit(1)
+		}
+
+		// If the last byte is a newline, truncate the file by one byte.
+		if lastByte[0] == '\n' {
+			err = file.Truncate(stat.Size() - 1)
+			if err != nil {
+				fmt.Println("Error truncating file:", err)
+				os.Exit(1)
 			}
 		}
 	} else {
-		for i := 0; i < 8; i++ {
-			for _, char := range bannerStr {
-				banner += GetLine(SelectedFont, 1+int(char-' ')*9+i)
-			}
-
-			fmt.Fprintln(file, banner)
-			banner = ""
+		// If no outputFileName is provided, print to the terminal
+		err := ascii_art.Process(bannerStr, banner)
+		if err != nil {
+			fmt.Println("Error building ASCII art:", err)
+			os.Exit(1)
 		}
 	}
 }
 
-func GetLine(fontFileName string, lineNumber int) string {
-	file, err := os.Open(fontFileName)
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(0)
-	}
-	scanner := bufio.NewScanner(file)
-	currentLine := 0
-	line := ""
-	for scanner.Scan() {
-		if currentLine == lineNumber {
-			line = scanner.Text()
+func isValidBanner(banner string) bool {
+	for _, validBanner := range validBanners {
+		if banner == validBanner {
+			return true
 		}
-		currentLine++
 	}
-	return line
-}
-
-func remove(slice []string, index int) []string {
-	return append(slice[:index], slice[index+1:]...)
+	return false
 }

@@ -3,8 +3,8 @@ package color
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
+	"student/utils"
 )
 
 const (
@@ -16,58 +16,20 @@ func Process(input string, colors []string, banner string, colorWords string) er
 
 	for _, color := range colors {
 		var selectedColor string
+		var err error
 		if strings.HasPrefix(color, "rgb(") && strings.HasSuffix(color, ")") {
-			rgbValues := strings.TrimPrefix(color, "rgb(")
-			rgbValues = strings.TrimSuffix(rgbValues, ")")
-			rgbValuesSplit := strings.Split(rgbValues, ",")
-			if len(rgbValuesSplit) != 3 {
-				return fmt.Errorf("invalid RGB color value")
-			}
-			r, err := strconv.Atoi(strings.TrimSpace(rgbValuesSplit[0]))
+			selectedColor, err = utils.GetRGBColor(color)
 			if err != nil {
-				return fmt.Errorf("invalid RGB color value: %v", err)
+				return err
 			}
-			g, err := strconv.Atoi(strings.TrimSpace(rgbValuesSplit[1]))
-			if err != nil {
-				return fmt.Errorf("invalid RGB color value: %v", err)
-			}
-			b, err := strconv.Atoi(strings.TrimSpace(rgbValuesSplit[2]))
-			if err != nil {
-				return fmt.Errorf("invalid RGB color value: %v", err)
-			}
-			selectedColor = fmt.Sprintf("\u001b[38;2;%d;%d;%dm", r, g, b)
 		} else {
-			switch color {
-			case "red":
-				selectedColor = "\u001b[38;2;255;0;0m"
-			case "green":
-				selectedColor = "\u001b[38;2;0;255;0m"
-			case "yellow":
-				selectedColor = "\u001b[38;2;255;255;0m"
-			case "blue":
-				selectedColor = "\u001b[38;2;0;0;255m"
-			case "purple":
-				selectedColor = "\u001b[38;2;161;32;255m"
-			case "cyan":
-				selectedColor = "\u001b[38;2;0;183;235m"
-			case "white":
-				selectedColor = "\u001b[38;2;255;255;255m"
-			case "pink":
-				selectedColor = "\u001b[38;2;255;0;255m"
-			case "grey":
-				selectedColor = "\u001b[38;2;128;128;128m"
-			case "black":
-				selectedColor = "\u001b[38;2;0;0;0m"
-			case "brown":
-				selectedColor = "\u001b[38;2;160;128;96m"
-			case "orange":
-				selectedColor = "\u001b[38;2;255;160;16m"
-			default:
+			if val, ok := utils.ColorsMap[color]; ok {
+				selectedColor = val
+			} else {
 				selectedColor = colorReset
 			}
 		}
 
-		// selectedColor = ... whatever it is ...
 		selectedColors = append(selectedColors, selectedColor)
 	}
 	// Create color queue

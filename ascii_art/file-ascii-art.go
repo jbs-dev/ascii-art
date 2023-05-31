@@ -7,7 +7,8 @@ import (
 	"student/utils"
 )
 
-func GenerateAsciiArt(input, banner string) (string, error) {
+// Print ascii-art to file
+func Generate(input, banner string) (string, error) {
 	var asciiArt strings.Builder
 	for _, r := range input {
 		if r < ' ' || r > '~' {

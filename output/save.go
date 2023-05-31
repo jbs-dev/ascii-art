@@ -4,26 +4,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
-	"student/ascii_art"
-	"student/utils"
 )
 
-var SelectedFont string
-
-// Process function to generate, align, colorise and output ASCII art
-func Process(outputFileName string, args []string, banner string) {
-	if len(args) < 1 {
-		return
-	}
-
-	if !utils.IsValidBanner(banner) {
-		fmt.Println("Invalid banner name:", banner)
-		os.Exit(1)
-	}
-
-	bannerStr := strings.Join(args, " ")
-
+// Process function to generate and output ASCII art
+func SaveProcess(outputFileName string, asciiArt string) {
 	// Check if outputFileName is provided
 	if outputFileName != "" {
 		// Write the ASCII art to the output file
@@ -35,13 +19,6 @@ func Process(outputFileName string, args []string, banner string) {
 		}
 
 		fullPath := filepath.Join(outputDirectory, outputFileName)
-
-		// Generate ASCII art and write to a file
-		asciiArt, err := ascii_art.Generate(bannerStr, banner)
-		if err != nil {
-			fmt.Println("Error generating ASCII art:", err)
-			os.Exit(1)
-		}
 
 		// Write the ASCII art to the file.
 		err = os.WriteFile(fullPath, []byte(asciiArt), 0644)
@@ -83,10 +60,6 @@ func Process(outputFileName string, args []string, banner string) {
 		}
 	} else {
 		// If no outputFileName is provided, print to the terminal
-		err := ascii_art.TerminalPrint(bannerStr, banner)
-		if err != nil {
-			fmt.Println("Error building ASCII art:", err)
-			os.Exit(1)
-		}
+		fmt.Println(asciiArt)
 	}
 }

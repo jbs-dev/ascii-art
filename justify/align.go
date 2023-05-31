@@ -32,11 +32,11 @@ func Process(input string, alignment string, banner string) (string, error) {
 func createArt(input string, template [][]string, alignment string) (string, error) {
 	var arr [][]string
 	var result string
-	wordArr := []string{"", "", "", "", "", "", "", ""}
-	skipNext := false
+	wordArr := make([]string, 8)
+	newline := false
 	for i, r := range input {
-		if skipNext {
-			skipNext = false
+		if newline {
+			newline = false
 			continue
 		}
 		if r == '\\' && len(input) > i+1 && input[i+1] == 'n' {
@@ -49,8 +49,8 @@ func createArt(input string, template [][]string, alignment string) (string, err
 				}
 			}
 			arr = [][]string{}
-			wordArr = []string{"", "", "", "", "", "", "", ""}
-			skipNext = true
+			wordArr = make([]string, 8)
+			newline = true
 			continue
 		}
 		if r == ' ' {

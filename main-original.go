@@ -13,8 +13,7 @@ import (
 	ban "student/utils"
 )
 
-func main() {
-
+func main_test() {
 	hasFlagOption := false
 
 	for _, arg := range os.Args {
@@ -71,82 +70,18 @@ func main() {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		// New case to handle both --output and --color flags
-	case *outputFlag != "" && *colorFlag != "":
-		args := flag.Args()
-		if len(args) != 2 {
-			fmt.Println("Invalid command line arguments. Usage: go run main.go --output=<file_path> --color=<color> <string> <banner>")
+	case *outputFlag != "":
+		if len(os.Args) < 4 {
+			fmt.Println("Invalid command line arguments. Usage: go run main.go --output=<file_path> <string> <banner>")
 			os.Exit(1)
 		}
-		inputString := args[0]
-		banner := args[1]
+		inputString := os.Args[2]
+		banner := os.Args[3]
 		if !ban.IsValidBanner(banner) {
 			fmt.Println("Invalid banner type.")
 			os.Exit(1)
 		}
-		asciiArt, err := ascii_art.Generate(inputString, banner)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		if *colorFlag != "" {
-			colors := strings.Split(*colorFlag, ",")
-			asciiArt, err = color.ApplyColor(asciiArt, colors)
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-		}
-
-		output.SaveProcess(*outputFlag, asciiArt)
-
-		// New case to handle both --align and --color flags
-	case *alignFlag != "" && *colorFlag != "":
-		args := flag.Args()
-		if len(args) != 2 {
-			fmt.Println("Invalid command line arguments. Usage: go run main.go --align=<alignment> --color=<color> <string> <banner>")
-			os.Exit(1)
-		}
-		inputString := args[0]
-		banner := args[1]
-		if !ban.IsValidBanner(banner) {
-			fmt.Println("Invalid banner type.")
-			os.Exit(1)
-		}
-		// Process alignment
-		asciiArt, err := align.Process(inputString, *alignFlag, banner)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		// Process colorization
-		colors := strings.Split(*colorFlag, ",")
-		asciiArt, err = color.ApplyColor(asciiArt, colors)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		fmt.Println(asciiArt)
-
-	case *alignFlag != "":
-		args := flag.Args()
-		if len(args) != 2 {
-			fmt.Println("Invalid command line arguments. Usage: go run main.go --align=<alignment> <string> <banner>")
-			os.Exit(1)
-		}
-		inputString := args[0]
-		banner := args[1]
-		if !ban.IsValidBanner(banner) {
-			fmt.Println("Invalid banner type.")
-			os.Exit(1)
-		}
-		asciiArt, err := align.Process(inputString, *alignFlag, banner)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		fmt.Println(asciiArt)
+		output.Process(*outputFlag, []string{inputString}, banner)
 
 	case *colorFlag != "":
 		args := flag.Args()
@@ -168,18 +103,24 @@ func main() {
 			fmt.Println(err)
 			return
 		}
-	case *outputFlag != "":
-		if len(os.Args) < 4 {
-			fmt.Println("Invalid command line arguments. Usage: go run main.go --output=<file_path> <string> <banner>")
+	case *alignFlag != "":
+		args := flag.Args()
+		if len(args) != 2 {
+			fmt.Println("Invalid command line arguments. Usage: go run main.go --align=<alignment> <string> <banner>")
 			os.Exit(1)
 		}
-		inputString := os.Args[2]
-		banner := os.Args[3]
+		inputString := args[0]
+		banner := args[1]
 		if !ban.IsValidBanner(banner) {
 			fmt.Println("Invalid banner type.")
 			os.Exit(1)
 		}
-		output.Process(*outputFlag, []string{inputString}, banner)
+		asciiArt, err := align.Process(inputString, *alignFlag, banner)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		fmt.Println(asciiArt)
 
 	default:
 		args := flag.Args()

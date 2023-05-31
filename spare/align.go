@@ -35,7 +35,7 @@ func Process(input string, alignment string, banner string) (string, error) {
 
 // createArt transforms the input string into ASCII art and aligns it.
 func createArt(input string, bannerTemplate [][]string, alignment string) (string, error) {
-	var asciiArtWords [][]string
+	var arr [][]string
 	var result string
 
 	wordArr := make([]string, 8)
@@ -49,17 +49,17 @@ func createArt(input string, bannerTemplate [][]string, alignment string) (strin
 		}
 
 		// If we encounter a '\n', add the current word to the list, add a newline, and start a new word.
-		if r == '\\' && len(input) > i+1 && input[i+1] == 'n' {
-			asciiArtWords, wordArr, result = processWord(asciiArtWords, wordArr, alignment, result)
-			asciiArtWords = append(asciiArtWords, []string{"\n"})
+		if r == '\\' && len(input) != i+1 && input[i+1] == 'n' {
+			arr, wordArr, result = processWord(arr, wordArr, alignment, result)
+			arr = append(arr, []string{"\n"})
 			newline = true
 			continue
 		}
 
 		// If we encounter a space, add the current word to the list, add a space block, and start a new word.
 		if r == ' ' {
-			asciiArtWords, wordArr, result = processWord(asciiArtWords, wordArr, alignment, result)
-			asciiArtWords = append(asciiArtWords, makeSpace())
+			arr, wordArr, result = processWord(arr, wordArr, alignment, result)
+			arr = append(arr, makeSpace())
 			continue
 		}
 
@@ -68,38 +68,38 @@ func createArt(input string, bannerTemplate [][]string, alignment string) (strin
 	}
 
 	// Add the last word to the list.
-	asciiArtWords = append(asciiArtWords, wordArr)
+	arr = append(arr, wordArr)
 
 	// Generate the output from the list of words.
-	result = generateOutput(asciiArtWords, alignment, result)
+	result = generateOutput(arr, alignment, result)
 
 	return result, nil
 }
 
 // processWord adds the current word to the list of ASCII art words and returns a new word array.
-func processWord(asciiArtWords [][]string, wordArr []string, alignment string, result string) ([][]string, []string, string) {
-	asciiArtWords = append(asciiArtWords, wordArr)
+func processWord(arr [][]string, wordArr []string, alignment string, result string) ([][]string, []string, string) {
+	arr = append(arr, wordArr)
 
 	// If the alignment is "justify", print the current line immediately.
 	if alignment == "justify" {
-		result += printJustify(asciiArtWords)
-		asciiArtWords = nil
+		result += printJustify(arr)
+		arr = nil
 	}
 
 	// Start a new word.
 	wordArr = make([]string, 8)
 
-	return asciiArtWords, wordArr, result
+	return arr, wordArr, result
 }
 
 // generateOutput concatenates the ASCII art words into a single string.
-func generateOutput(asciiArtWords [][]string, alignment string, result string) string {
+func generateOutput(arr [][]string, alignment string, result string) string {
 	if alignment == "justify" {
 		// If the alignment is "justify", print the last line.
-		result += printJustify(asciiArtWords)
+		result += printJustify(arr)
 	} else {
 		// Otherwise, print all lines.
-		for _, wordArr := range asciiArtWords {
+		for _, wordArr := range arr {
 			result += print(wordArr, alignment)
 		}
 	}

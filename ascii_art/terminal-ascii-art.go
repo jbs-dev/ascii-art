@@ -7,7 +7,9 @@ import (
 	"student/utils"
 )
 
-func Process(input, banner string) error {
+// Print ascii-art to the terminal
+func TerminalPrint(input, banner string) error {
+
 	for _, r := range input {
 		if r < ' ' || r > '~' {
 			return fmt.Errorf("invalid character: %c", r)
@@ -47,7 +49,6 @@ func Process(input, banner string) error {
 			arr = append(arr, r)
 		}
 		artTerminal(arr, lines)
-
 	} else {
 		var lineCount int
 		var offset int

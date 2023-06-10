@@ -15,12 +15,12 @@ import (
 
 func main() {
 
-	hasFlagOption := false
+	// hasFlagOption := false
 
 	for _, arg := range os.Args {
 		switch {
 		case strings.HasPrefix(arg, "--") || strings.HasPrefix(arg, "-"):
-			hasFlagOption = true
+			// hasFlagOption = true
 
 			switch {
 			case strings.HasPrefix(arg, "--reverse") && !strings.Contains(arg, "="):
@@ -47,11 +47,11 @@ func main() {
 		}
 	}
 
-	if !hasFlagOption && (len(os.Args) != 3 || !ban.IsValidBanner(os.Args[2])) {
+	/* if !hasFlagOption && (len(os.Args) != 3 || !ban.IsValidBanner(os.Args[2])) {
 		fmt.Println("Usage: go run . [STRING] [BANNER]")
 		fmt.Println("EX: go run . something standard")
 		os.Exit(0)
-	}
+	} */
 
 	reverseFlag := flag.String("reverse", "", "Path to the target file to process")
 	outputFlag := flag.String("output", "", "File path to output the ASCII art")
@@ -73,17 +73,7 @@ func main() {
 		}
 		// New case to handle both --output and --color flags
 	case *outputFlag != "" && *colorFlag != "":
-		args := flag.Args()
-		if len(args) != 2 {
-			fmt.Println("Invalid command line arguments. Usage: go run main.go --output=<file_path> --color=<color> <string> <banner>")
-			os.Exit(1)
-		}
-		inputString := args[0]
-		banner := args[1]
-		if !ban.IsValidBanner(banner) {
-			fmt.Println("Invalid banner type.")
-			os.Exit(1)
-		}
+		inputString, banner := ban.ParseArgs(flag.Args())
 		asciiArt, err := ascii_art.Generate(inputString, banner)
 		if err != nil {
 			fmt.Println(err)
@@ -104,16 +94,11 @@ func main() {
 		// New case to handle both --align and --color flags
 	case *alignFlag != "" && *colorFlag != "":
 		args := flag.Args()
-		if len(args) != 2 {
-			fmt.Println("Invalid command line arguments. Usage: go run main.go --align=<alignment> --color=<color> <string> <banner>")
+		if len(args) < 1 {
+			fmt.Println("Invalid command line arguments. Usage: go run main.go --align=<alignment> --color=<color> <string> [banner]")
 			os.Exit(1)
 		}
-		inputString := args[0]
-		banner := args[1]
-		if !ban.IsValidBanner(banner) {
-			fmt.Println("Invalid banner type.")
-			os.Exit(1)
-		}
+		inputString, banner := ban.ParseArgs(args)
 		// Process alignment
 		asciiArt, err := align.Process(inputString, *alignFlag, banner)
 		if err != nil {
@@ -131,16 +116,7 @@ func main() {
 
 	case *alignFlag != "":
 		args := flag.Args()
-		if len(args) != 2 {
-			fmt.Println("Invalid command line arguments. Usage: go run main.go --align=<alignment> <string> <banner>")
-			os.Exit(1)
-		}
-		inputString := args[0]
-		banner := args[1]
-		if !ban.IsValidBanner(banner) {
-			fmt.Println("Invalid banner type.")
-			os.Exit(1)
-		}
+		inputString, banner := ban.ParseArgs(args)
 		asciiArt, err := align.Process(inputString, *alignFlag, banner)
 		if err != nil {
 			fmt.Println(err)
@@ -168,13 +144,9 @@ func main() {
 			fmt.Println(err)
 			return
 		}
+
 	case *outputFlag != "":
-		if len(os.Args) < 4 {
-			fmt.Println("Invalid command line arguments. Usage: go run main.go --output=<file_path> <string> <banner>")
-			os.Exit(1)
-		}
-		inputString := os.Args[2]
-		banner := os.Args[3]
+		inputString, banner := ban.ParseArgs(flag.Args())
 		if !ban.IsValidBanner(banner) {
 			fmt.Println("Invalid banner type.")
 			os.Exit(1)
@@ -182,12 +154,24 @@ func main() {
 		output.Process(*outputFlag, []string{inputString}, banner)
 
 	default:
+		inputString, banner := ban.ParseArgs(flag.Args())
+		err := ascii_art.TerminalPrint(inputString, banner)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		/* default:
 		args := flag.Args()
 		if len(args) > 0 {
 			inputString := args[0]
 			banner := "standard" // set default banner
 
-			if len(args) > 1 && ban.IsValidBanner(args[1]) {
+			if len(args) > 1 {
+				if !ban.IsValidBanner(args[1]) {
+					fmt.Println("Invalid banner type. Please use a valid banner or leave it blank for standard banner.")
+					os.Exit(1)
+				}
 				banner = args[1] // if banner is specified and valid, use it
 			}
 
@@ -197,8 +181,9 @@ func main() {
 				os.Exit(1)
 			}
 		} else {
-			fmt.Println("Please provide a valid option or a string to generate ASCII art from.")
+			fmt.Println("Usage: go run . [STRING] [BANNER]")
+			fmt.Println("EX: go run . something standard")
 			os.Exit(1)
-		}
+		} */
 	}
 }

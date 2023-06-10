@@ -22,102 +22,175 @@ func Process(input string, alignment string, banner string) (string, error) {
 		return "", err
 	}
 	segmentedTemplate := segment(template)
-	art, err := createArt(input, segmentedTemplate, alignment)
+
+	var builder strings.Builder
+	err = createArt(&builder, input, segmentedTemplate, alignment)
 	if err != nil {
 		return "", err
 	}
-	return art, nil
+	return builder.String(), nil
 }
 
-func createArt(input string, template [][]string, alignment string) (string, error) {
+func createArt(builder *strings.Builder, input string, template [][]string, alignment string) error {
+	// log.Println("alignment:", alignment)
+
 	var arr [][]string
-	var result string
-	wordArr := make([]string, 8)
-	newline := false
+	var wordArr []string
+	skipChar := false
+	newLineCount := 0
 	for i, r := range input {
-		if newline {
-			newline = false
+		if skipChar {
+			skipChar = false
 			continue
 		}
+
 		if r == '\\' && len(input) > i+1 && input[i+1] == 'n' {
-			arr = append(arr, wordArr)
-			if alignment == "justify" {
-				result += printJustify(arr)
-			} else {
-				for _, wordArr := range arr {
-					result += print(wordArr, alignment)
+			skipChar = true
+			newLineCount++
+			if len(wordArr) != 0 {
+				arr = append(arr, wordArr)
+				if alignment == "justify" {
+					printJustify(builder, arr)
+				} else {
+					print(builder, arr, alignment)
 				}
+				arr = [][]string{}
+				wordArr = []string{}
 			}
-			arr = [][]string{}
-			wordArr = make([]string, 8)
-			newline = true
+
+			if newLineCount > 1 {
+				builder.WriteString("\n")
+			}
+
 			continue
 		}
+
+		// Reset newLineCount if character isn't a newline
+		newLineCount = 0
+
+		// If there's a space, it indicates end of a word
 		if r == ' ' {
-			arr = append(arr, wordArr)
-			wordArr = []string{"          ", "          ", "          ", "          ", "          ", "          ", "          ", "          "}
-			arr = append(arr, wordArr)
-			wordArr = []string{"", "", "", "", "", "", "", ""}
+			if len(wordArr) != 0 {
+				arr = append(arr, wordArr)
+				wordArr = []string{}
+			}
+			wordArr = customAppend(wordArr, []string{"        ", "        ", "        ", "        ", "        ", "        ", "        ", "        "})
 			continue
 		}
 		wordArr = customAppend(wordArr, template[int(r)-32])
 	}
-	arr = append(arr, wordArr)
-
-	lineArr := make([]string, 8)
-	if alignment == "justify" {
-		result += printJustify(arr)
-	} else {
-		for _, wordArr := range arr {
-			for i := range lineArr {
-				lineArr[i] += wordArr[i]
-			}
-		}
-		result += print(lineArr, alignment)
+	if len(wordArr) != 0 {
+		arr = append(arr, wordArr)
 	}
-	return result, nil
+
+	if alignment == "justify" {
+		printJustify(builder, arr)
+	} else {
+		print(builder, arr, alignment)
+	}
+	// log.Println("Final wordArr length:", len(wordArr))
+	// log.Println("Final arr length:", len(arr))
+
+	return nil
 }
 
-func print(str []string, alignment string) string {
-	var result string
-	n := len(str)
-	artlen := len(str[0])
+func printJustify(builder *strings.Builder, arr [][]string) {
+	n := len(arr)
+	m := len(arr[0])
+	totalWidth := 0
+	for _, wordArr := range arr {
+		totalWidth += len(wordArr[0])
+	}
+	totalSpaces := getTerminalWidth() - totalWidth
+
+	// If there's only one word, it's not justified
+	if n == 1 {
+		print(builder, arr, "left") // pass the entire arr which is a [][]string
+		return
+	}
+
+	spacesBetweenWords := totalSpaces / (n - 1)
+	remainder := totalSpaces % (n - 1)
+
+	// Print variables here
+	// log.Println("n:", n)
+	// log.Println("totalWidth:", totalWidth)
+	// log.Println("totalSpaces:", totalSpaces)
+	// log.Println("spacesBetweenWords:", spacesBetweenWords)
+	// log.Println("remainder:", remainder)
+
+	for i := 0; i < m; i++ {
+		for j, wordArr := range arr {
+			builder.WriteString(wordArr[i])
+			if j < n-1 {
+				spaces := spacesBetweenWords
+				if remainder > 0 {
+					spaces++
+					remainder--
+				}
+				builder.WriteString(strings.Repeat(" ", spaces))
+			}
+		}
+		builder.WriteString("\n")
+	}
+}
+
+func print(builder *strings.Builder, arr [][]string, alignment string) {
+	m := len(arr[0])
 	width := getTerminalWidth()
 
 	switch alignment {
 	case "center":
-		diff := width/2 - artlen/2
-		for i := 0; i < n; i++ {
+		totalWidth := 0
+		for _, wordArr := range arr {
+			totalWidth += len(wordArr[0])
+		}
+		diff := width/2 - totalWidth/2
+		for i := 0; i < m; i++ {
 			for j := 0; j < diff; j++ {
-				result += " "
+				builder.WriteString(" ")
 			}
-			result += str[i] + "\n"
+			for _, wordArr := range arr {
+				builder.WriteString(wordArr[i])
+			}
+			builder.WriteString("\n")
 		}
 	case "right":
-		diff := width - artlen
-		for i := 0; i < n; i++ {
-			for j := 0; j < diff; j++ {
-				result += " "
-			}
-			result += str[i] + "\n"
+		totalWidth := 0
+		for _, wordArr := range arr {
+			totalWidth += len(wordArr[0])
 		}
-	case "left":
-		for i := 0; i < n; i++ {
-			result += str[i] + "\n"
+		diff := width - totalWidth
+		for i := 0; i < m; i++ {
+			for j := 0; j < diff; j++ {
+				builder.WriteString(" ")
+			}
+			for _, wordArr := range arr {
+				builder.WriteString(wordArr[i])
+			}
+			builder.WriteString("\n")
+		}
+	default:
+		for i := 0; i < m; i++ {
+			for _, wordArr := range arr {
+				builder.WriteString(wordArr[i])
+			}
+			builder.WriteString("\n")
 		}
 	}
-	return result
 }
 
 func customAppend(str, item []string) []string {
-	if str == nil {
-		str = make([]string, 8)
-	}
 	for i := 0; i < 8; i++ {
-		str[i] = str[i] + item[i]
+		if i < len(str) {
+			str[i] += item[i]
+		} else {
+			str = append(str, item[i])
+		}
 	}
 	return str
 }
+
 func segment(template []string) [][]string {
 	var result [][]string
 	for i := 0; i < len(template)-1; i = i + 9 {
@@ -128,6 +201,11 @@ func segment(template []string) [][]string {
 }
 
 func getTerminalWidth() int {
+	// If we're debugging in VS Code, return a hard-coded terminal width
+	if _, ok := os.LookupEnv("VSCODE_GO_DEBUGGING"); ok {
+		return 80 // Or whatever value is suitable for your needs
+	}
+
 	cmd := exec.Command("stty", "size")
 	cmd.Stdin = os.Stdin
 	out, _ := cmd.Output()
@@ -147,33 +225,9 @@ func GetAllLines(fontFileName string) ([]string, error) {
 	for scanner.Scan() {
 		lines = append(lines, scanner.Text())
 	}
+
 	if scanner.Err() != nil {
 		return nil, scanner.Err()
 	}
 	return lines, nil
-}
-
-func printJustify(arr [][]string) string {
-	var result string
-	n := len(arr)
-	if n == 0 {
-		return result
-	}
-	m := len(arr[0])
-	totalWidth := 0
-	for _, wordArr := range arr {
-		totalWidth += len(wordArr[0])
-	}
-	totalSpaces := getTerminalWidth() - totalWidth
-	spacePerWord := totalSpaces / (n - 1)
-	for i := 0; i < m; i++ {
-		for j, wordArr := range arr {
-			result += wordArr[i]
-			if j < n-1 {
-				result += strings.Repeat(" ", spacePerWord)
-			}
-		}
-		result += "\n"
-	}
-	return result
 }
